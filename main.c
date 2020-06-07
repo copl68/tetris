@@ -22,6 +22,8 @@ typedef struct Shape{
 
 enum colors{Red = 1, Orange, Yellow, Green, Blue, Purple, White};
 
+//Rewrites the shape of the activePiece depending on pieceNum (the type of piece)
+//Also takes the address of the shape variable as a paremeter, which is assigned to a pointer
 void createPiece(int pieceNum, Shape *activePiece){
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
@@ -33,27 +35,57 @@ void createPiece(int pieceNum, Shape *activePiece){
 		case 1:
 			//Straight piece
 			activePiece->color = red;
-			activePiece->layout[0][0] = 1;
 			activePiece->layout[0][1] = 1;
-			activePiece->layout[0][2] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[2][1] = 1;
 			break;
 		case 2:
+			//Square
 			activePiece->color = orange;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[2][0] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[2][1] = 1;
 			break;
 		case 3:
+			//T-shape
 			activePiece->color = yellow;
+			activePiece->layout[2][0] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[2][2] = 1;
 			break;
 		case 4:
+			//Right L-shape
 			activePiece->color = green;
+			activePiece->layout[0][1] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[2][2] = 1;
 			break;
 		case 5:
+			//Left L-shape
 			activePiece->color = blue;
+			activePiece->layout[0][1] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[2][0] = 1;
 			break;
 		case 6:
+			//Right zigzag
 			activePiece->color = purple;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[1][2] = 1;
+			activePiece->layout[0][2] = 1;
 			break;
 		case 7:
+			//Left zigzag
 			activePiece->color = white;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[0][0] = 1;
 			break;	
 	}
 }
@@ -79,6 +111,5 @@ int main(){
 	blank = getColor(0, 0, 0);	
 
 	Shape activePiece;
-	printf("&activePiece: %d\n", &activePiece);
-	createPiece(1, &activePiece);	
+	
 }
