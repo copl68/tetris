@@ -22,7 +22,6 @@ int startY;
 typedef struct Shape{
 	int layout[3][3];
 	int color;
-	int code;
 } Shape; 
 
 Shape piece;
@@ -38,61 +37,60 @@ void createPiece(int pieceNum, Shape *activePiece){
 		}
 	}
 	
-	activePiece->code = pieceNum;
 	switch(pieceNum){
 		case 1:
 			//Straight piece
 			activePiece->color = red;
-			activePiece->layout[1][0] = 1;
+			activePiece->layout[0][1] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[2][1] = 1;
 			break;
 		case 2:
 			//Square
 			activePiece->color = orange;
-			activePiece->layout[0][1] = 1;
-			activePiece->layout[0][2] = 1;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[2][0] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[2][1] = 1;
 			break;
 		case 3:
 			//T-shape
 			activePiece->color = yellow;
-			activePiece->layout[0][2] = 1;
+			activePiece->layout[2][0] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[2][1] = 1;
 			activePiece->layout[2][2] = 1;
 			break;
 		case 4:
 			//Right L-shape
 			activePiece->color = green;
-			activePiece->layout[1][0] = 1;
+			activePiece->layout[0][1] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[2][1] = 1;
 			activePiece->layout[2][2] = 1;
 			break;
 		case 5:
 			//Left L-shape
 			activePiece->color = blue;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
-			activePiece->layout[0][2] = 1;
-			break;
-		case 6:
-			//Right zigzag
-			activePiece->color = purple;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[0][1] = 1;
 			activePiece->layout[1][1] = 1;
 			activePiece->layout[2][1] = 1;
 			activePiece->layout[2][0] = 1;
 			break;
+		case 6:
+			//Right zigzag
+			activePiece->color = purple;
+			activePiece->layout[2][1] = 1;
+			activePiece->layout[1][1] = 1;
+			activePiece->layout[1][2] = 1;
+			activePiece->layout[0][2] = 1;
+			break;
 		case 7:
 			//Left zigzag
 			activePiece->color = white;
-			activePiece->layout[1][2] = 1;
+			activePiece->layout[2][1] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[0][1] = 1;
+			activePiece->layout[1][0] = 1;
 			activePiece->layout[0][0] = 1;
 			break;	
 	}
@@ -100,19 +98,19 @@ void createPiece(int pieceNum, Shape *activePiece){
 
 //Draws activePiece on the board according to where startX and startY want the piece to start
 void drawPiece(Shape *activePiece, int changeX, int changeY){
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			setPixel(fb->bitmap, startX + i, startY + j, blank);
-		}
-	}
-	//printf("x before: %d\n", startX);
-	//printf("y before: %d\n", startY);
+	printf("activePiece: %d\n", activePiece);
+	printf("drawPiece\n");
 	startX = startX + changeX;
 	startY = startY + changeY;	
-	//printf("x after: %d\n", startX);
-	//printf("y after: %d\n", startY);
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
+			printf(" %d ", activePiece->layout[i][j]);
+		}
+		printf("\n");
+	}
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			setPixel(fb->bitmap, startX + i - changeX, startY + j - changeY, blank);
 			if(activePiece->layout[i][j] == 1){
 				setPixel(fb->bitmap, startX + i, startY + j, activePiece->color);
 			}	
@@ -123,24 +121,16 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 void movePiece(unsigned int code){
 	switch(code){
 		case KEY_UP:
-			if(startY != 0){		
-				drawPiece(&piece, 0, -1);
-			}
+			drawPiece(&piece, -1, 0);
 			break;
 		case KEY_DOWN:
-			if(startY != 5){
-				drawPiece(&piece, 0, 1);
-			}
+			drawPiece(&piece, 1, 0);
 			break;
 		case KEY_RIGHT:
-			if(startX != 5){
-				drawPiece(&piece, 1, 0);
-			}
+			drawPiece(&piece, 0, 1);
 			break;
 		case KEY_LEFT:
-			if(startX != 0){
-				drawPiece(&piece, -1, 0);
-			}
+			drawPiece(&piece, 0, -1);
 			break;
 		default:
 			break;
@@ -167,10 +157,12 @@ int main(){
 	white = getColor(255, 255, 255);
 	blank = getColor(0, 0, 0);	
 
+	Shape piece;
 	pi_joystick_t* joystick = getJoystickDevice();
 	startX = 2;
 	startY = 2;
-	createPiece(5, &piece);
+	createPiece(1, &piece);
+	printf("&piece: %d\n", &piece);
 	drawPiece(&piece, 0, 0);
 	while(run){
 		pollJoystick(joystick, movePiece, 1000);
