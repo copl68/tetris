@@ -146,6 +146,28 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 	}
 }
 
+void rotatePiece(){
+	//Don't rotate square piece
+	if(piece.code == 2){ return;}
+	int layoutCopy[3][3];
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			layoutCopy[i][j] = piece.layout[i][j];
+		}
+	}
+
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			piece.layout[i][j] = layoutCopy[j][2-i];
+		}
+	}
+
+	drawPiece(&piece, 0, 0);
+	//Maybe alter drawPiece parameter numbers to shift t-shape and other changes
+
+	//FIXME MUST UPDATE EMPTY ROWS & COLUMNS
+}	
+
 //Moves the piece up, down, left, or right when the joystick is pressed
 void movePiece(unsigned int code){
 	switch(code){
@@ -184,6 +206,7 @@ void movePiece(unsigned int code){
 			}
 			break;
 		default:
+			rotatePiece();
 			break;
 	}
 }
