@@ -146,26 +146,82 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 	}
 }
 
+//Rotates the piece 90 degreees clockwise when called. This updates the piece layout and which sides are empty
 void rotatePiece(){
 	//Don't rotate square piece
 	if(piece.code == 2){ return;}
 	int layoutCopy[3][3];
+	//Create copy of layout
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			layoutCopy[i][j] = piece.layout[i][j];
 		}
 	}
 
+	//Update the layout array with an rotated version
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			piece.layout[i][j] = layoutCopy[j][2-i];
 		}
 	}
 
-	drawPiece(&piece, 0, 0);
-	//Maybe alter drawPiece parameter numbers to shift t-shape and other changes
+	//Rotating a t-shape or zigzag when the left is empty will put in on the bottom of the array. This shifts the shape to the top
+	//of the layout array so that the player has more time to move the piece and think
+	if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.leftEmpty){
+		for(int i = 0; i < 3; i++){
+			piece.layout[0][i] = piece.layout[1][i];
+			piece.layout[1][i] = piece.layout[2][i];
+			piece.layout[2][i] = 0;
+		}
+	}
 
-	//FIXME MUST UPDATE EMPTY ROWS & COLUMNS
+	//Makes sure that the piece is drawn on the screen even if the layout array is partially off screen
+	if(startX == -1 && !piece.leftEmpty){
+		drawPiece(&piece, 1, 0);
+	}
+	else if(startX == 6 && !piece.rightEmpty){
+		drawPiece(&piece, -1, 0);
+	}
+	else if(startY == -1 && !piece.topEmpty){
+		drawPiece(&piece, 0, 1);
+	}
+	else if(startY == 6 && !piece.bottomEmpty){
+		drawPiece(&piece, 0, -1);
+	}
+	else{
+		drawPiece(&piece, 0, 0);
+	}
+
+	//Updates which sides of the layout array are empty after rotation
+	if(piece.topEmpty){
+		piece.topEmpty = false;
+		piece.rightEmpty = true;
+		if(piece.code == 1){
+			piece.leftEmpty = true;
+			piece.bottomEmpty = false;
+		}
+	}
+	else if(piece.leftEmpty){
+		piece.leftEmpty = false;
+		piece.topEmpty = true;
+		if(piece.code == 1){
+			piece.bottomEmpty = true;
+			piece.rightEmpty = false;
+		}
+		else if(piece.code == 3 || piece.code == 6 || piece.code == 7){
+			//Since we shifted these pieces to the top of the layout array
+			piece.topEmpty = false;
+			piece.bottomEmpty = true;
+		}	
+	}
+	else if(piece.bottomEmpty){
+		piece.bottomEmpty = false;
+		piece.leftEmpty = true;
+	}
+	else if(piece.rightEmpty){
+		piece.rightEmpty = false;
+		piece.bottomEmpty = true;
+	}
 }	
 
 //Moves the piece up, down, left, or right when the joystick is pressed
