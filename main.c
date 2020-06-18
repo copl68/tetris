@@ -17,6 +17,7 @@ int blue;
 int purple;
 int white;
 int blank;
+int board[8][8];
 
 int startX;
 int startY;
@@ -115,22 +116,48 @@ void createPiece(int pieceNum, Shape *activePiece){
 	}
 }
 
+void drawBoard(){
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			setPixel(fb->bitmap, i, j, board[i][j]);
+		}
+	}
+}
+
 //Draws activePiece on the board according to where startX and startY want the piece to start
 void drawPiece(Shape *activePiece, int changeX, int changeY){
+	drawBoard();
+	bool willCollide = false;
+	//Check to see if the piece will collide with an occupied space
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			if((startX + i + changeX) < 8 && (startX + i + changeX) > -1 && (startY + j + changeY) < 8 && (startY + j + changeY) > -1){
+				if(piece.layout[i][j] == 1 && board[startX + i + changeX][startY + j + changeY] != blank){
+					willCollide = true;
+				}				
+			}
+		}
+	}
+	//Clears where the piece previously was
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			//Checks to see if pixel is in framebuffer range
 			if((startX + i) < 8 && (startX + i) > -1 && (startY + j) < 8 && (startY + j) > -1){
-				setPixel(fb->bitmap, startX + i, startY + j, blank);
+				if(piece.layout[i][j] == 1){
+					setPixel(fb->bitmap, startX + i, startY + j, blank);
+				}
 			}
 		}
 	}
 	//printf("x before: %d\n", startX);
 	//printf("y before: %d\n", startY);
-	startX = startX + changeX;
-	startY = startY + changeY;	
+	if(!willCollide){
+		startX = startX + changeX;
+		startY = startY + changeY;
+	}	
 	//printf("x after: %d\n", startX);
 	//printf("y after: %d\n", startY);
+	//Prints the pieces new position to the screen
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			//Checks to see if pixel is in framebuffer range
@@ -286,6 +313,15 @@ int main(){
 	purple = getColor(121, 35, 169);
 	white = getColor(255, 255, 255);
 	blank = getColor(0, 0, 0);	
+	
+	for(int i = 0; i < 8; i++){
+		for(int j = 0; j < 8; j++){
+			board[i][j] = blank;	
+		}
+	}
+
+	board[1][1] = purple;
+	drawBoard();
 
 	pi_joystick_t* joystick = getJoystickDevice();
 	startX = 2;
