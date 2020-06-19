@@ -116,12 +116,14 @@ void createPiece(int pieceNum, Shape *activePiece){
 	}
 }
 
+//Draws the board to the framebuffer
 void drawBoard(){
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
 			setPixel(fb->bitmap, i, j, board[i][j]);
 		}
 	}
+	//FIXME: only draw the needed part of the board again
 }
 
 //Draws activePiece on the board according to where startX and startY want the piece to start
@@ -177,6 +179,29 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 void rotatePiece(){
 	//Don't rotate square piece
 	if(piece.code == 2){ return;}
+	//Check if a rotated piece will collide with an occupied space
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			printf("i: %d\n", i);
+			printf("j: %d\n", j);
+			printf("startX: %d\n", startX);
+			printf("startY: %d\n\n", startY);
+			if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.leftEmpty){
+				if(piece.layout[j][2-i+1] == 1 && board[startX + i][startY + j - 1] != blank){
+					printf("first return\n");
+					return;
+				}
+			}
+			else if((startX + i > -1) && (startX + i < 8) && (startY + j > -1) && (startY + j < 8)){
+				if(piece.layout[j][2-i] == 1 && board[startX + i][startY + j] != blank){
+					printf("Got here...\n");
+					return;
+				}
+		
+			}
+		}
+		//FIXME: THIS ISNT WORKING FOR PURPLE AT LEAST. JUST FIX ROTATION COLLISION!!!
+	}
 	int layoutCopy[3][3];
 	//Create copy of layout
 	for(int i = 0; i < 3; i++){
@@ -328,6 +353,12 @@ int main(){
 	startY = 2;
 	srand(time(0));
 	createPiece(rand() % 8 + 1, &piece);
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			printf(" %d ", piece.layout[i][j]);
+		}
+		printf("\n");
+	}
 	drawPiece(&piece, 0, 0);
 	while(run){
 		pollJoystick(joystick, movePiece, 1000);
