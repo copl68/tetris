@@ -61,21 +61,21 @@ void createPiece(int pieceNum, Shape *activePiece){
 		case 2:
 			//Square
 			activePiece->color = orange;
-			activePiece->layout[1][2] = 1;
-			activePiece->layout[2][2] = 1;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[2][0] = 1;
 			activePiece->layout[1][1] = 1;
 			activePiece->layout[2][1] = 1;
 			activePiece->topEmpty = true;
-			activePiece->leftEmpty = true;
+			activePiece->rightEmpty = true;
 			break;
 		case 3:
 			//T-shape
 			activePiece->color = yellow;
-			activePiece->layout[2][0] = 1;
+			activePiece->layout[0][0] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[2][1] = 1;
-			activePiece->layout[2][2] = 1;
-			activePiece->topEmpty = true;
+			activePiece->layout[0][1] = 1;
+			activePiece->layout[0][2] = 1;
+			activePiece->bottomEmpty = true;
 			break;
 		case 4:
 			//Left L-shape
@@ -89,11 +89,11 @@ void createPiece(int pieceNum, Shape *activePiece){
 		case 5:
 			//Right L-shape
 			activePiece->color = blue;
-			activePiece->layout[0][1] = 1;
-			activePiece->layout[1][1] = 1;
+			activePiece->layout[0][0] = 1;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[2][0] = 1;
 			activePiece->layout[2][1] = 1;
-			activePiece->layout[2][2] = 1;
-			activePiece->leftEmpty = true;
+			activePiece->rightEmpty = true;
 			break;
 		case 6:
 			//Left zigzag
@@ -107,11 +107,11 @@ void createPiece(int pieceNum, Shape *activePiece){
 		case 7:
 			//Right zigzag
 			activePiece->color = white;
-			activePiece->layout[2][1] = 1;
+			activePiece->layout[2][0] = 1;
+			activePiece->layout[1][0] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
-			activePiece->layout[0][2] = 1;
-			activePiece->leftEmpty = true;
+			activePiece->layout[0][1] = 1;
+			activePiece->rightEmpty = true;
 			break;	
 	}
 }
@@ -175,6 +175,27 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 	}
 }
 
+//Loops through to check if a piece is colliding with an occupied space on the board
+bool checkCollision(int xOffset, int yOffset){
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			if(piece.layout[i][j] == 1 && board[startX + i + xOffset][startY + j + yOffset] != blank){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+//Acts as an "undo" feature when a piece has been rotated when it shouldn't have been
+void unrotate(int layoutCopy[3][3]){
+	for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+				piece.layout[i][j] = layoutCopy[i][j];
+			}	
+		}
+}
+
 //Rotates the piece 90 degreees clockwise when called. This updates the piece layout and which sides are empty
 void rotatePiece(){
 	//Don't rotate square piece
@@ -197,7 +218,7 @@ void rotatePiece(){
 
 	//Rotating a t-shape or zigzag when the left is empty will put in on the bottom of the array. This shifts the shape to the top
 	//of the layout array so that the player has more time to move the piece and think
-	if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.rightEmpty){
+	if(!(piece.code == 1 || piece.code == 2) && piece.rightEmpty){
 		for(int i = 0; i < 3; i++){
 			piece.layout[0][i] = piece.layout[1][i];
 			piece.layout[1][i] = piece.layout[2][i];
@@ -206,38 +227,50 @@ void rotatePiece(){
 	}
 
 	//Checks to see if a pieces rotation will collide with an occupied board space
-	bool unrotate = false;
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			if(piece.layout[i][j] == 1 && board[startX + i][startY + j] != blank){
-				unrotate = true;
-			}
-		}
-	}
+	bool undo = checkCollision(0, 0);
 
 	//Undo the rotation if a collision will occur
-	if(unrotate){
-		for(int i = 0; i < 3; i++){
-			for(int j = 0; j < 3; j++){
-				piece.layout[i][j] = layoutCopy[i][j];
-			}	
-		}
+	if(undo){
+		unrotate(layoutCopy);
 		return;
 	}
 
-	//FIXME Make sure that if it is shifted and it will collide, it wont rotate
 	//Makes sure that the piece is drawn on the screen even if the layout array is partially off screen
-	if(startX == -1 && !piece.leftEmpty){
-		drawPiece(&piece, 1, 0);
+	if(startX == -1 && !piece.topEmpty){
+		if(checkCollision(1, 0)){
+			unrotate(layoutCopy);
+			return;
+		}
+		else{
+			drawPiece(&piece, 1, 0);
+		}
 	}
-	else if(startX == 6 && !piece.rightEmpty){
-		drawPiece(&piece, -1, 0);
+	else if(startX == 6 && !piece.bottomEmpty){
+		if(checkCollision(-1, 0)){
+			unrotate(layoutCopy);
+			return;
+		}
+		else{
+			drawPiece(&piece, -1, 0);
+		}
 	}
-	else if(startY == -1 && !piece.topEmpty){
-		drawPiece(&piece, 0, 1);
+	else if(startY == -1 && !piece.leftEmpty){
+		if(checkCollision(0, 1)){
+			unrotate(layoutCopy);
+			return;
+		}
+		else{
+			drawPiece(&piece, 0, 1);
+		}
 	}
-	else if(startY == 6 && !piece.bottomEmpty){
-		drawPiece(&piece, 0, -1);
+	else if(startY == 6 && !piece.rightEmpty){
+		if(checkCollision(0, -1)){
+			unrotate(layoutCopy);
+			return;
+		}	
+		else{
+			drawPiece(&piece, 0, -1);
+		}
 	}
 	else{
 		drawPiece(&piece, 0, 0);
@@ -267,7 +300,7 @@ void rotatePiece(){
 	else if(piece.rightEmpty){
 		piece.rightEmpty = false;
 		piece.topEmpty = true;
-		if(piece.code == 3 || piece.code == 6 || piece.code == 7){
+		if(!(piece.code == 1 || piece.code == 2)){
 			//Since we shifted these pieces to the top of the layout
 			piece.topEmpty = false;
 			piece.bottomEmpty = true;
