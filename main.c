@@ -66,7 +66,7 @@ void createPiece(int pieceNum, Shape *activePiece){
 			activePiece->layout[1][1] = 1;
 			activePiece->layout[2][1] = 1;
 			activePiece->topEmpty = true;
-			activePiece->rightEmpty = true;
+			activePiece->leftEmpty = true;
 			break;
 		case 3:
 			//T-shape
@@ -83,7 +83,7 @@ void createPiece(int pieceNum, Shape *activePiece){
 			activePiece->layout[0][1] = 1;
 			activePiece->layout[1][1] = 1;
 			activePiece->layout[2][1] = 1;
-			activePiece->layout[2][2] = 1;
+			activePiece->layout[2][0] = 1;
 			activePiece->rightEmpty = true;
 			break;
 		case 5:
@@ -92,7 +92,7 @@ void createPiece(int pieceNum, Shape *activePiece){
 			activePiece->layout[0][1] = 1;
 			activePiece->layout[1][1] = 1;
 			activePiece->layout[2][1] = 1;
-			activePiece->layout[2][0] = 1;
+			activePiece->layout[2][2] = 1;
 			activePiece->leftEmpty = true;
 			break;
 		case 6:
@@ -100,8 +100,8 @@ void createPiece(int pieceNum, Shape *activePiece){
 			activePiece->color = purple;
 			activePiece->layout[2][1] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][2] = 1;
-			activePiece->layout[0][2] = 1;
+			activePiece->layout[1][0] = 1;
+			activePiece->layout[0][0] = 1;
 			activePiece->rightEmpty = true;
 			break;
 		case 7:
@@ -109,8 +109,8 @@ void createPiece(int pieceNum, Shape *activePiece){
 			activePiece->color = white;
 			activePiece->layout[2][1] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[0][0] = 1;
+			activePiece->layout[1][2] = 1;
+			activePiece->layout[0][2] = 1;
 			activePiece->leftEmpty = true;
 			break;	
 	}
@@ -179,29 +179,7 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 void rotatePiece(){
 	//Don't rotate square piece
 	if(piece.code == 2){ return;}
-	//Check if a rotated piece will collide with an occupied space
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			printf("i: %d\n", i);
-			printf("j: %d\n", j);
-			printf("startX: %d\n", startX);
-			printf("startY: %d\n\n", startY);
-			if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.leftEmpty){
-				if(piece.layout[j][2-i+1] == 1 && board[startX + i][startY + j - 1] != blank){
-					printf("first return\n");
-					return;
-				}
-			}
-			else if((startX + i > -1) && (startX + i < 8) && (startY + j > -1) && (startY + j < 8)){
-				if(piece.layout[j][2-i] == 1 && board[startX + i][startY + j] != blank){
-					printf("Got here...\n");
-					return;
-				}
-		
-			}
-		}
-		//FIXME: THIS ISNT WORKING FOR PURPLE AT LEAST. JUST FIX ROTATION COLLISION!!!
-	}
+	
 	int layoutCopy[3][3];
 	//Create copy of layout
 	for(int i = 0; i < 3; i++){
@@ -219,7 +197,7 @@ void rotatePiece(){
 
 	//Rotating a t-shape or zigzag when the left is empty will put in on the bottom of the array. This shifts the shape to the top
 	//of the layout array so that the player has more time to move the piece and think
-	if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.leftEmpty){
+	if((piece.code == 3 || piece.code == 6 || piece.code == 7) && piece.rightEmpty){
 		for(int i = 0; i < 3; i++){
 			piece.layout[0][i] = piece.layout[1][i];
 			piece.layout[1][i] = piece.layout[2][i];
@@ -227,6 +205,27 @@ void rotatePiece(){
 		}
 	}
 
+	//Checks to see if a pieces rotation will collide with an occupied board space
+	bool unrotate = false;
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			if(piece.layout[i][j] == 1 && board[startX + i][startY + j] != blank){
+				unrotate = true;
+			}
+		}
+	}
+
+	//Undo the rotation if a collision will occur
+	if(unrotate){
+		for(int i = 0; i < 3; i++){
+			for(int j = 0; j < 3; j++){
+				piece.layout[i][j] = layoutCopy[i][j];
+			}	
+		}
+		return;
+	}
+
+	//FIXME Make sure that if it is shifted and it will collide, it wont rotate
 	//Makes sure that the piece is drawn on the screen even if the layout array is partially off screen
 	if(startX == -1 && !piece.leftEmpty){
 		drawPiece(&piece, 1, 0);
@@ -247,32 +246,32 @@ void rotatePiece(){
 	//Updates which sides of the layout array are empty after rotation
 	if(piece.topEmpty){
 		piece.topEmpty = false;
-		piece.rightEmpty = true;
+		piece.leftEmpty = true;
 		if(piece.code == 1){
-			piece.leftEmpty = true;
+			piece.rightEmpty = true;
 			piece.bottomEmpty = false;
 		}
 	}
 	else if(piece.leftEmpty){
 		piece.leftEmpty = false;
-		piece.topEmpty = true;
+		piece.bottomEmpty = true;
 		if(piece.code == 1){
-			piece.bottomEmpty = true;
+			piece.topEmpty = true;
 			piece.rightEmpty = false;
 		}
-		else if(piece.code == 3 || piece.code == 6 || piece.code == 7){
-			//Since we shifted these pieces to the top of the layout array
-			piece.topEmpty = false;
-			piece.bottomEmpty = true;
-		}	
 	}
 	else if(piece.bottomEmpty){
 		piece.bottomEmpty = false;
-		piece.leftEmpty = true;
+		piece.rightEmpty = true;
 	}
 	else if(piece.rightEmpty){
 		piece.rightEmpty = false;
-		piece.bottomEmpty = true;
+		piece.topEmpty = true;
+		if(piece.code == 3 || piece.code == 6 || piece.code == 7){
+			//Since we shifted these pieces to the top of the layout
+			piece.topEmpty = false;
+			piece.bottomEmpty = true;
+		}
 	}
 }	
 
@@ -281,20 +280,20 @@ void movePiece(unsigned int code){
 	switch(code){
 		case KEY_UP:
 			//Checks if pieces layout array will be in bounds
-			if(startY > 0){		
-				drawPiece(&piece, 0, -1);
+			if(startY < 5){		
+				drawPiece(&piece, 0, 1);
 			}
 			//if the layout array will go out of bounds, it must not contain any pixels of the actual piece
-			else if(startY == 0 && piece.rightEmpty){
-				drawPiece(&piece, 0, -1);
+			else if(startY == 5 && piece.rightEmpty){
+				drawPiece(&piece, 0, 1);
 			}
 			break;
 		case KEY_DOWN:
-			if(startY < 5){
-				drawPiece(&piece, 0, 1);
+			if(startY > 0){
+				drawPiece(&piece, 0, -1);
 			}
-			else if(startY == 5 && piece.leftEmpty){
-				drawPiece(&piece, 0, 1);
+			else if(startY == 0 && piece.leftEmpty){
+				drawPiece(&piece, 0, -1);
 			}
 			break;
 		case KEY_RIGHT:
