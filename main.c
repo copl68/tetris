@@ -123,7 +123,6 @@ void drawBoard(){
 			setPixel(fb->bitmap, i, j, board[i][j]);
 		}
 	}
-	//FIXME: only draw the needed part of the board again
 }
 
 //Draws activePiece on the board according to where startX and startY want the piece to start
@@ -369,30 +368,34 @@ int main(){
 	blue = getColor(51, 51, 255);
 	purple = getColor(121, 35, 169);
 	white = getColor(255, 255, 255);
-	blank = getColor(0, 0, 0);	
-	
+	blank = getColor(0, 0, 0);
+	time_t rawtime;
+	time_t prevtime;
+
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
 			board[i][j] = blank;	
 		}
 	}
 
-	board[1][1] = purple;
 	drawBoard();
 
 	pi_joystick_t* joystick = getJoystickDevice();
-	startX = 2;
-	startY = 2;
+	startX = 0;
+	startY = 3;
 	srand(time(0));
 	createPiece(rand() % 8 + 1, &piece);
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			printf(" %d ", piece.layout[i][j]);
-		}
-		printf("\n");
-	}
+	
 	drawPiece(&piece, 0, 0);
+	time(&rawtime);
+	time(&prevtime);
 	while(run){
-		pollJoystick(joystick, movePiece, 1000);
+		//Moves the piece down once a second has gone by
+		if((int)difftime(rawtime, prevtime) != 0){
+			drawPiece(&piece, 1, 0);
+		}
+		prevtime = rawtime;
+		time(&rawtime);
+		pollJoystick(joystick, movePiece, 10);
 	}
 }
