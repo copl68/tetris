@@ -62,10 +62,10 @@ void createPiece(int pieceNum, Shape *activePiece){
 			//Square
 			activePiece->color = orange;
 			activePiece->layout[1][0] = 1;
-			activePiece->layout[2][0] = 1;
+			activePiece->layout[0][0] = 1;
 			activePiece->layout[1][1] = 1;
-			activePiece->layout[2][1] = 1;
-			activePiece->topEmpty = true;
+			activePiece->layout[0][1] = 1;
+			activePiece->bottomEmpty = true;
 			activePiece->rightEmpty = true;
 			break;
 		case 3:
@@ -350,6 +350,21 @@ void movePiece(unsigned int code){
 	}
 }
 
+//Checks to see if the piece can move down another space
+bool spaceBelow(){
+	//If the array where the piece is is empty on the bottom, you need to check one row above where you normally would. 
+	int empty = piece.bottomEmpty ? -1 : 0;
+	bool space = true;
+	//If there is an occupied space below the shape, it cant move down
+	////FIXME Make sure that the spaace can move down if theres blocks below, but the piece avoids it. 
+	for(int i = 0; i < 3; i++){
+		if(board[startX + 3 + empty][startY + i] != blank){
+			space = false;
+		}
+	}
+	return space;
+}
+
 //Used to exit the program when needed
 void interrupt_handler(int sig){
 	run = 0;
@@ -392,7 +407,13 @@ int main(){
 	while(run){
 		//Moves the piece down once a second has gone by
 		if((int)difftime(rawtime, prevtime) != 0){
-			drawPiece(&piece, 1, 0);
+			if(spaceBelow()){
+				drawPiece(&piece, 1, 0);
+			}
+			else{
+			
+				//Draw piece to board, create a new piece, and draw it. 
+			}
 		}
 		prevtime = rawtime;
 		time(&rawtime);
