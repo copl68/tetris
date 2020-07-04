@@ -355,13 +355,16 @@ bool spaceBelow(){
 	//If the array where the piece is is empty on the bottom, you need to check one row above where you normally would. 
 	int empty = piece.bottomEmpty ? -1 : 0;
 	bool space = true;
-	//If there is an occupied space below the shape, it cant move down
-	////FIXME Make sure that the spaace can move down if theres blocks below, but the piece avoids it. 
+	//If there is an occupied space below the shape, it cant move down 
+	int upAnother;
 	for(int i = 0; i < 3; i++){
-		if(board[startX + 3 + empty][startY + i] != blank){
+		upAnother = piece.layout[2 + empty][i] != blank ? 0 : -1;	//If theres not a piece on the bottom of the shape array being looked at
+		//If a block rigght under a piece is occupied and a piece occupies a space right above that block
+		if(board[startX + 3 + empty + upAnother][startY + i] != blank && piece.layout[2 + empty + upAnother][i] != blank){
 			space = false;
 		}
 	}
+	if((startX + empty) == 5){ space = false;}
 	return space;
 }
 
@@ -400,7 +403,11 @@ int main(){
 	startY = 3;
 	srand(time(0));
 	createPiece(rand() % 8 + 1, &piece);
+
 	
+	board[5][4] = yellow;
+
+
 	drawPiece(&piece, 0, 0);
 	time(&rawtime);
 	time(&prevtime);
