@@ -368,6 +368,67 @@ bool spaceBelow(){
 	return space;
 }
 
+//Simulates gravity to condense the blocks so that there are no empty rows. 
+void condense(int fullRows[8]){
+	int fullCount = 0;
+	for(int row = fullRows[fullCount]; row > -1; row--){
+		if(row == fullRows[fullCount]){
+			fullCount++;
+		}
+		for(int col = 0; col < 8; col++){
+			if(row - fullCount < 0){
+				board[row][col] = blank;
+			}
+			else{
+				board[row][col] = board[row - fullCount][col];			
+			}
+		}
+	}
+}
+
+//Checks to see if any rows on the board are full. If so, clear them
+void checkRows(){
+	//FIXME Is not clearing a row if it is not on the very bottom
+	bool full = true;
+	int fullRows[8] = {-1,-1,-1,-1,-1,-1,-1,-1};	//Keep track of which rows are full
+	int fullCount = 0;
+	
+	for(int row = 7; row > -1; row--){
+		for(int col = 0; col < 8; col++){
+			if(board[row][col] == blank){
+				full = false;
+				col = 7;
+			}
+		}
+		if(full){
+			fullRows[fullCount] = row;
+			fullCount++;	
+		}
+	}
+
+	fullCount = 0;
+	//Quick animation to  clear rows
+	for(int distOut = 0; distOut < 4; distOut++){
+		while(fullRows[fullCount] != -1){
+			setPixel(fb->bitmap, fullRows[fullCount], 3 - distOut, white);
+			setPixel(fb->bitmap, fullRows[fullCount], 4 + distOut, white);
+			fullCount++;
+		}
+		fullCount = 0;
+		usleep(200000);
+	}
+
+	while(fullRows[fullCount] != -1){
+		for(int col = 0; col < 8; col++){
+			board[fullRows[fullCount]][col] = blank;
+			setPixel(fb->bitmap, fullRows[fullCount], col, blank);
+		}
+		fullCount++;
+	}
+	condense(fullRows);
+	return;
+}
+
 //Used to exit the program when needed
 void interrupt_handler(int sig){
 	run = 0;
@@ -404,10 +465,6 @@ int main(){
 	srand(time(0));
 	createPiece(rand() % 8 + 1, &piece);
 
-	
-	board[5][4] = yellow;
-
-
 	drawPiece(&piece, 0, 0);
 	time(&rawtime);
 	time(&prevtime);
@@ -418,8 +475,18 @@ int main(){
 				drawPiece(&piece, 1, 0);
 			}
 			else{
-			
-				//Draw piece to board, create a new piece, and draw it. 
+				for(int i = 0; i < 3; i++){
+					for(int j = 0; j < 3; j++){
+						if(piece.layout[i][j] != blank){
+							board[startX + i][startY + j] = piece.color;
+						}
+					}
+				}	
+				checkRows();
+				createPiece(rand() % 8 + 1, &piece);
+				startX = 0; 
+				startY = 3;
+				drawPiece(&piece, 0, 0);
 			}
 		}
 		prevtime = rawtime;
