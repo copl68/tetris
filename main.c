@@ -375,12 +375,10 @@ void condense(int fullRows[8]){
 		if(row == fullRows[fullCount]){
 			fullCount++;
 		}
-		for(int col = 0; col < 8; col++){
-			if(row - fullCount < 0){
+		else{
+			for(int col = 0; col < 8; col++){
+				board[row + fullCount][col] = board[row][col];
 				board[row][col] = blank;
-			}
-			else{
-				board[row][col] = board[row - fullCount][col];			
 			}
 		}
 	}
@@ -388,7 +386,7 @@ void condense(int fullRows[8]){
 
 //Checks to see if any rows on the board are full. If so, clear them
 void checkRows(){
-	//FIXME Is not clearing a row if it is not on the very bottom
+
 	bool full = true;
 	int fullRows[8] = {-1,-1,-1,-1,-1,-1,-1,-1};	//Keep track of which rows are full
 	int fullCount = 0;
@@ -404,28 +402,31 @@ void checkRows(){
 			fullRows[fullCount] = row;
 			fullCount++;	
 		}
+		full = true;
 	}
 
 	fullCount = 0;
-	//Quick animation to  clear rows
-	for(int distOut = 0; distOut < 4; distOut++){
+	if(fullRows[0] != -1){
+		//Quick animation to  clear rows
+		for(int distOut = 0; distOut < 4; distOut++){
+			while(fullRows[fullCount] != -1){
+				setPixel(fb->bitmap, fullRows[fullCount], 3 - distOut, white);
+				setPixel(fb->bitmap, fullRows[fullCount], 4 + distOut, white);
+				fullCount++;
+			}
+			fullCount = 0;
+			usleep(100000);
+		}
+
 		while(fullRows[fullCount] != -1){
-			setPixel(fb->bitmap, fullRows[fullCount], 3 - distOut, white);
-			setPixel(fb->bitmap, fullRows[fullCount], 4 + distOut, white);
+			for(int col = 0; col < 8; col++){
+				board[fullRows[fullCount]][col] = blank;
+				setPixel(fb->bitmap, fullRows[fullCount], col, blank);
+			}
 			fullCount++;
 		}
-		fullCount = 0;
-		usleep(200000);
+		condense(fullRows);
 	}
-
-	while(fullRows[fullCount] != -1){
-		for(int col = 0; col < 8; col++){
-			board[fullRows[fullCount]][col] = blank;
-			setPixel(fb->bitmap, fullRows[fullCount], col, blank);
-		}
-		fullCount++;
-	}
-	condense(fullRows);
 	return;
 }
 
