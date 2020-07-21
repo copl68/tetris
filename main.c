@@ -21,6 +21,7 @@ int board[8][8];
 
 int startX;
 int startY;
+int points;
 
 typedef struct Shape{
 	int layout[3][3];
@@ -215,7 +216,7 @@ void rotatePiece(){
 		}
 	}
 
-	//Rotating a t-shape or zigzag when the left is empty will put in on the bottom of the array. This shifts the shape to the top
+	//Rotating a t-shape or zigzag when the right is empty will put in on the bottom of the array. This shifts the shape to the top
 	//of the layout array so that the player has more time to move the piece and think
 	if(!(piece.code == 1 || piece.code == 2) && piece.rightEmpty){
 		for(int i = 0; i < 3; i++){
@@ -235,7 +236,7 @@ void rotatePiece(){
 	}
 
 	//Makes sure that the piece is drawn on the screen even if the layout array is partially off screen
-	if(startX == -1 && !piece.topEmpty){
+	if(startX == -1 && !piece.rightEmpty){
 		if(checkCollision(1, 0)){
 			unrotate(layoutCopy);
 			return;
@@ -244,7 +245,7 @@ void rotatePiece(){
 			drawPiece(&piece, 1, 0);
 		}
 	}
-	else if(startX == 6 && !piece.bottomEmpty){
+	else if(startX == 6 && !piece.leftEmpty){
 		if(checkCollision(-1, 0)){
 			unrotate(layoutCopy);
 			return;
@@ -253,7 +254,7 @@ void rotatePiece(){
 			drawPiece(&piece, -1, 0);
 		}
 	}
-	else if(startY == -1 && !piece.leftEmpty){
+	else if(startY == -1 && !piece.topEmpty){
 		if(checkCollision(0, 1)){
 			unrotate(layoutCopy);
 			return;
@@ -262,7 +263,7 @@ void rotatePiece(){
 			drawPiece(&piece, 0, 1);
 		}
 	}
-	else if(startY == 6 && !piece.rightEmpty){
+	else if(startY == 6 && !piece.bottomEmpty){
 		if(checkCollision(0, -1)){
 			unrotate(layoutCopy);
 			return;
@@ -359,7 +360,7 @@ bool spaceBelow(){
 	int upAnother;
 	for(int i = 0; i < 3; i++){
 		upAnother = piece.layout[2 + empty][i] != blank ? 0 : -1;	//If theres not a piece on the bottom of the shape array being looked at
-		//If a block rigght under a piece is occupied and a piece occupies a space right above that block
+		//If a block right under a piece is occupied and a piece occupies a space right above that block
 		if(board[startX + 3 + empty + upAnother][startY + i] != blank && piece.layout[2 + empty + upAnother][i] != blank){
 			space = false;
 		}
@@ -405,6 +406,21 @@ void checkRows(){
 		full = true;
 	}
 
+	//Calculating points based off of how many lines are cleared at once (tetris.wiki/Scoring)
+	switch(fullCount){
+		case 1: 
+			points += 40;
+			break;
+		case 2: 
+			points += 100;
+			break;
+		case 3: 
+			points += 300;
+			break;
+		default: 
+			break;
+	}
+
 	fullCount = 0;
 	if(fullRows[0] != -1){
 		//Quick animation to  clear rows
@@ -430,9 +446,21 @@ void checkRows(){
 	return;
 }
 
+bool canUsePiece(){
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			if(board[startX + i][startY + j] != blank && piece.layout[i][j] == 1){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 //Used to exit the program when needed
 void interrupt_handler(int sig){
 	run = 0;
+	printf("\n       GAME OVER\n\n*** POINTS SCORED: %d ***\n\n", points);
 	clearBitmap(fb->bitmap, blank);
 	exit(0);
 }
@@ -451,6 +479,7 @@ int main(){
 	blank = getColor(0, 0, 0);
 	time_t rawtime;
 	time_t prevtime;
+	points = 0;
 
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
@@ -487,7 +516,13 @@ int main(){
 				createPiece(rand() % 8 + 1, &piece);
 				startX = 0; 
 				startY = 3;
-				drawPiece(&piece, 0, 0);
+				if(canUsePiece()){
+					drawPiece(&piece, 0, 0);
+				}
+				else{
+					sleep(1);
+					interrupt_handler(0);
+				}
 			}
 		}
 		prevtime = rawtime;
