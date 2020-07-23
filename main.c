@@ -37,88 +37,90 @@ Shape piece;
 
 //Rewrites the shape of the activePiece depending on pieceNum (the type of piece)
 //Also takes the address of the shape variable as a paremeter, which is assigned to a pointer
-void createPiece(int pieceNum, Shape *activePiece){
+void createPiece(int pieceNum){
+	printf("createPiece\n");
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
-			activePiece->layout[i][j] = 0;
+			piece.layout[i][j] = 0;
 		}
 	}
 	
-	activePiece->code = pieceNum;
-	activePiece->topEmpty = false;
-	activePiece->bottomEmpty = false;
-	activePiece->rightEmpty = false;
-	activePiece->leftEmpty = false;
+	piece.code = pieceNum;
+	piece.topEmpty = false;
+	piece.bottomEmpty = false;
+	piece.rightEmpty = false;
+	piece.leftEmpty = false;
 	switch(pieceNum){
 		case 1:
 			//Straight piece
-			activePiece->color = red;
-			activePiece->layout[0][1] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[2][1] = 1;
-			activePiece->rightEmpty = true;
-			activePiece->leftEmpty = true;
+			piece.color = red;
+			piece.layout[0][1] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[2][1] = 1;
+			piece.rightEmpty = true;
+			piece.leftEmpty = true;
 			break;
 		case 2:
 			//Square
-			activePiece->color = orange;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[0][0] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[0][1] = 1;
-			activePiece->bottomEmpty = true;
-			activePiece->rightEmpty = true;
+			piece.color = orange;
+			piece.layout[1][0] = 1;
+			piece.layout[0][0] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[0][1] = 1;
+			piece.bottomEmpty = true;
+			piece.rightEmpty = true;
 			break;
 		case 3:
 			//T-shape
-			activePiece->color = yellow;
-			activePiece->layout[0][0] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[0][1] = 1;
-			activePiece->layout[0][2] = 1;
-			activePiece->bottomEmpty = true;
+			piece.color = yellow;
+			piece.layout[0][0] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[0][1] = 1;
+			piece.layout[0][2] = 1;
+			piece.bottomEmpty = true;
 			break;
 		case 4:
 			//Left L-shape
-			activePiece->color = green;
-			activePiece->layout[0][1] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[2][1] = 1;
-			activePiece->layout[2][0] = 1;
-			activePiece->rightEmpty = true;
+			piece.color = green;
+			piece.layout[0][1] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[2][1] = 1;
+			piece.layout[2][0] = 1;
+			piece.rightEmpty = true;
 			break;
 		case 5:
 			//Right L-shape
-			activePiece->color = blue;
-			activePiece->layout[0][0] = 1;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[2][0] = 1;
-			activePiece->layout[2][1] = 1;
-			activePiece->rightEmpty = true;
+			piece.color = blue;
+			piece.layout[0][0] = 1;
+			piece.layout[1][0] = 1;
+			piece.layout[2][0] = 1;
+			piece.layout[2][1] = 1;
+			piece.rightEmpty = true;
 			break;
 		case 6:
 			//Left zigzag
-			activePiece->color = purple;
-			activePiece->layout[2][1] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[0][0] = 1;
-			activePiece->rightEmpty = true;
+			piece.color = purple;
+			piece.layout[2][1] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[1][0] = 1;
+			piece.layout[0][0] = 1;
+			piece.rightEmpty = true;
 			break;
 		case 7:
 			//Right zigzag
-			activePiece->color = white;
-			activePiece->layout[2][0] = 1;
-			activePiece->layout[1][0] = 1;
-			activePiece->layout[1][1] = 1;
-			activePiece->layout[0][1] = 1;
-			activePiece->rightEmpty = true;
+			piece.color = white;
+			piece.layout[2][0] = 1;
+			piece.layout[1][0] = 1;
+			piece.layout[1][1] = 1;
+			piece.layout[0][1] = 1;
+			piece.rightEmpty = true;
 			break;	
 	}
 }
 
 //Draws the board to the framebuffer
 void drawBoard(){
+	printf("drawBoard\n");
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
 			setPixel(fb->bitmap, i, j, board[i][j]);
@@ -128,6 +130,7 @@ void drawBoard(){
 
 //Draws activePiece on the board according to where startX and startY want the piece to start
 void drawPiece(Shape *activePiece, int changeX, int changeY){
+	printf("drawPiece\n");
 	drawBoard();
 	bool willCollide = false;
 	//Check to see if the piece will collide with an occupied space
@@ -353,15 +356,38 @@ void movePiece(unsigned int code){
 
 //Checks to see if the piece can move down another space
 bool spaceBelow(){
+	printf("spaceBelow\n");
 	//If the array where the piece is is empty on the bottom, you need to check one row above where you normally would. 
 	int empty = piece.bottomEmpty ? -1 : 0;
 	bool space = true;
 	//If there is an occupied space below the shape, it cant move down 
 	int upAnother;
+	printf("\n\n");
+	for(int i = 0; i < 3; i++){
+		for(int j = 0; j < 3; j++){
+			printf(" %d ", piece.layout[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+	for(int i = 0; i < 8; i ++){
+		for(int j = 0; j < 8; j++){
+			if(board[i][j] != blank){
+				printf(" 1 ");
+			}
+			else{
+				printf(" 0 ");
+			}
+		}
+		printf("\n");
+	}
+	printf("\n");
 	for(int i = 0; i < 3; i++){
 		upAnother = piece.layout[2 + empty][i] != blank ? 0 : -1;	//If theres not a piece on the bottom of the shape array being looked at
 		//If a block right under a piece is occupied and a piece occupies a space right above that block
+		printf(" %d %d \n", board[startX + 3 + empty + upAnother][startY + i] != blank, piece.layout[2 + empty + upAnother][i] != blank);
 		if(board[startX + 3 + empty + upAnother][startY + i] != blank && piece.layout[2 + empty + upAnother][i] != blank){
+			printf("\n\nno room - %d\n\n", i);
 			space = false;
 		}
 	}
@@ -387,7 +413,6 @@ void condense(int fullRows[8]){
 
 //Checks to see if any rows on the board are full. If so, clear them
 void checkRows(){
-
 	bool full = true;
 	int fullRows[8] = {-1,-1,-1,-1,-1,-1,-1,-1};	//Keep track of which rows are full
 	int fullCount = 0;
@@ -493,7 +518,7 @@ int main(){
 	startX = 0;
 	startY = 3;
 	srand(time(0));
-	createPiece(rand() % 8 + 1, &piece);
+	createPiece(rand() % 7 + 1);
 
 	drawPiece(&piece, 0, 0);
 	time(&rawtime);
@@ -502,6 +527,7 @@ int main(){
 		//Moves the piece down once a second has gone by
 		if((int)difftime(rawtime, prevtime) != 0){
 			if(spaceBelow()){
+				printf("Theres space below!!\n");
 				drawPiece(&piece, 1, 0);
 			}
 			else{
@@ -513,7 +539,9 @@ int main(){
 					}
 				}	
 				checkRows();
-				createPiece(rand() % 8 + 1, &piece);
+				int r = rand() % 7 + 1;
+				printf("%d\n", r);
+				createPiece(r);
 				startX = 0; 
 				startY = 3;
 				if(canUsePiece()){
