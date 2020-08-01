@@ -3,8 +3,9 @@ An *adapted* library for Raspberry Pi sense hat. The full libsense library can b
 
  
 This is a c library for the Raspberry Pi Sense Hat (Astro Pi).  It is designed to cover basic communication with the various interfaces on the Sense Hat.  
+
 ---
-###Usage:  
+### Usage:  
 Connect to the device:  
 	getFBDevice() : connect to the framebuffer for the led array  
 	getJoystickDevice() : connect to the joystick event device
