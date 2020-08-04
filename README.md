@@ -1,12 +1,12 @@
 ### Tetris
-##For Raspberry Pi with SenseHat
+## For Raspberry Pi with SenseHat
 
-#Concept
+# Concept
 
-#Controls
+# Controls
 
-#Usage
+# Usage
 
-#Author
+# Author
 
-#Acknowledgements
+# Acknowledgements
