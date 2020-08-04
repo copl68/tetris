@@ -1,5 +1,5 @@
 # Libsense (mini version) 
-An *adapted* library for Raspberry Pi sense hat. The full libsense library can be found [here](github.com/gsilber/libsense_p). This version contains only filed needed for joystick and framebuffer usage.
+An *adapted* library for Raspberry Pi sense hat. The full libsense library can be found [here](github.com/gsilber/libsense_p). This version contains only files needed for joystick and framebuffer usage.
 
  
 This is a c library for the Raspberry Pi Sense Hat (Astro Pi).  It is designed to cover basic communication with the various interfaces on the Sense Hat.  

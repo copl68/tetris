@@ -487,6 +487,8 @@ void interrupt_handler(int sig){
 	run = 0;
 	printf("\n       GAME OVER\n\n*** POINTS SCORED: %d ***\n\n", points);
 	clearBitmap(fb->bitmap, blank);
+	freeFBDevice(fb);
+	freeJoystickDevice(joystick);
 	exit(0);
 }
 
