@@ -316,6 +316,7 @@ void rotatePiece(){
 void movePiece(unsigned int code){
 	switch(code){
 		case KEY_UP:
+			break; 		//Comment out if you want to be able to move up
 			//Checks if pieces layout array will be in bounds
 			if(startY < 5){		
 				drawPiece(&piece, 0, 1);
