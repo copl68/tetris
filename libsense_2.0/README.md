@@ -11,8 +11,8 @@ Connect to the device:
 	getJoystickDevice() : connect to the joystick event device
   
 Each of these should be freed with a corresponding call to the correct free function:  
-	freeFBDevice(device)  
-	freeJoystickDevice(device)  
+	freeFrameBuffer(device)  
+	freeJoystick(device)  
 
 Then call functions to manipulate that device as defined in the appropriate header file for that device.  
 	example: to make the led array all red:  

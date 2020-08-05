@@ -8,6 +8,7 @@
 #include <time.h>
 
 pi_framebuffer_t *fb;
+pi_joystick_t *joystick;
 int run = 1;
 int red;
 int orange;
@@ -487,8 +488,8 @@ void interrupt_handler(int sig){
 	run = 0;
 	printf("\n       GAME OVER\n\n*** POINTS SCORED: %d ***\n\n", points);
 	clearBitmap(fb->bitmap, blank);
-	freeFBDevice(fb);
-	freeJoystickDevice(joystick);
+	freeFrameBuffer(fb);
+	freeJoystick(joystick);
 	exit(0);
 }
 
@@ -516,7 +517,7 @@ int main(){
 
 	drawBoard();
 
-	pi_joystick_t* joystick = getJoystickDevice();
+	joystick = getJoystickDevice();
 	startX = 0;
 	startY = 3;
 	srand(time(0));
