@@ -17,7 +17,10 @@ Then, to execute the code, type:
 ``` 
  > ./tetris
 ```
-
+The default does not allow upward movement. To override this, you may type: 
+```
+> ./tetris up
+```
 ### Author
 **Name:** Cole Plum \
 **E-mail** cplum@udel.edu

@@ -1,3 +1,4 @@
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sense/sense.h>
@@ -23,6 +24,7 @@ int board[8][8];
 int startX;
 int startY;
 int points;
+bool up = false;
 
 typedef struct Shape{
 	int layout[3][3];
@@ -39,7 +41,6 @@ Shape piece;
 //Rewrites the shape of the activePiece depending on pieceNum (the type of piece)
 //Also takes the address of the shape variable as a paremeter, which is assigned to a pointer
 void createPiece(int pieceNum){
-	printf("createPiece\n");
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
 			piece.layout[i][j] = 0;
@@ -121,7 +122,6 @@ void createPiece(int pieceNum){
 
 //Draws the board to the framebuffer
 void drawBoard(){
-	printf("drawBoard\n");
 	for(int i = 0; i < 8; i++){
 		for(int j = 0; j < 8; j++){
 			setPixel(fb->bitmap, i, j, board[i][j]);
@@ -131,7 +131,6 @@ void drawBoard(){
 
 //Draws activePiece on the board according to where startX and startY want the piece to start
 void drawPiece(Shape *activePiece, int changeX, int changeY){
-	printf("drawPiece\n");
 	drawBoard();
 	bool willCollide = false;
 	//Check to see if the piece will collide with an occupied space
@@ -155,14 +154,10 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 			}
 		}
 	}
-	//printf("x before: %d\n", startX);
-	//printf("y before: %d\n", startY);
 	if(!willCollide){
 		startX = startX + changeX;
 		startY = startY + changeY;
 	}	
-	//printf("x after: %d\n", startX);
-	//printf("y after: %d\n", startY);
 	//Prints the pieces new position to the screen
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
@@ -171,9 +166,6 @@ void drawPiece(Shape *activePiece, int changeX, int changeY){
 				if(activePiece->layout[i][j] == 1){
 					setPixel(fb->bitmap, startX + i, startY + j, activePiece->color);
 				}
-				//else{
-				//	setPixel(fb->bitmap, startX + i, startY + j, white);
-				//}	
 			}
 		}
 	}
@@ -316,7 +308,6 @@ void rotatePiece(){
 void movePiece(unsigned int code){
 	switch(code){
 		case KEY_UP:
-			break; 		//Comment out if you want to be able to move up
 			//Checks if pieces layout array will be in bounds
 			if(startY < 5){		
 				drawPiece(&piece, 0, 1);
@@ -343,6 +334,7 @@ void movePiece(unsigned int code){
 			}
 			break;
 		case KEY_LEFT:
+			if(!up){ break;}
 			if(startX > 0){
 				drawPiece(&piece, -1, 0);
 			}
@@ -358,38 +350,15 @@ void movePiece(unsigned int code){
 
 //Checks to see if the piece can move down another space
 bool spaceBelow(){
-	printf("spaceBelow\n");
 	//If the array where the piece is is empty on the bottom, you need to check one row above where you normally would. 
 	int empty = piece.bottomEmpty ? -1 : 0;
 	bool space = true;
 	//If there is an occupied space below the shape, it cant move down 
 	int upAnother;
-	printf("\n\n");
-	for(int i = 0; i < 3; i++){
-		for(int j = 0; j < 3; j++){
-			printf(" %d ", piece.layout[i][j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-	for(int i = 0; i < 8; i ++){
-		for(int j = 0; j < 8; j++){
-			if(board[i][j] != blank){
-				printf(" 1 ");
-			}
-			else{
-				printf(" 0 ");
-			}
-		}
-		printf("\n");
-	}
-	printf("\n");
 	for(int i = 0; i < 3; i++){
 		upAnother = piece.layout[2 + empty][i] != blank ? 0 : -1;	//If theres not a piece on the bottom of the shape array being looked at
 		//If a block right under a piece is occupied and a piece occupies a space right above that block
-		printf(" %d %d \n", board[startX + 3 + empty + upAnother][startY + i] != blank, piece.layout[2 + empty + upAnother][i] != blank);
 		if(board[startX + 3 + empty + upAnother][startY + i] != blank && piece.layout[2 + empty + upAnother][i] != blank){
-			printf("\n\nno room - %d\n\n", i);
 			space = false;
 		}
 	}
@@ -473,6 +442,7 @@ void checkRows(){
 	return;
 }
 
+//Used at the end of the game to deterine if another piece can be added to the game without any overlao
 bool canUsePiece(){
 	for(int i = 0; i < 3; i++){
 		for(int j = 0; j < 3; j++){
@@ -494,7 +464,15 @@ void interrupt_handler(int sig){
 	exit(0);
 }
 
-int main(){
+int main(int argc, char *argv[]){
+	if(argc > 2){
+		printf("Too many arguments\n");
+		exit(0);
+	}
+	else if(argc == 2 && strcmp(argv[1], "up") == 0){
+		up = true;
+	}
+
 	signal(SIGINT, interrupt_handler);
 	fb = getFBDevice();
 	clearBitmap(fb->bitmap, blank);
@@ -531,7 +509,6 @@ int main(){
 		//Moves the piece down once a second has gone by
 		if((int)difftime(rawtime, prevtime) != 0){
 			if(spaceBelow()){
-				printf("Theres space below!!\n");
 				drawPiece(&piece, 1, 0);
 			}
 			else{
@@ -544,7 +521,6 @@ int main(){
 				}	
 				checkRows();
 				int r = rand() % 7 + 1;
-				printf("%d\n", r);
 				createPiece(r);
 				startX = 0; 
 				startY = 3;
