@@ -4,19 +4,19 @@ This project is an adaptation of the classic game,*Tetris*. Organize different s
 
 1 Row - 40 pts \
 2 Rows - 100 pts \
-3 Rows - 300 pts \
+3 Rows - 300 pts 
 ### Controls
 Use the joystick to move the pieces either left, right, or down. To rotate a piece, press down on the joystick. 
 
 ### Usage
 First, create the executable by using the makefile. Simply type:
-'''
+```
  > make 
-'''
+```
 Then, to execute the code, type:
-''' 
+``` 
  > ./tetris
-'''
+```
 
 ### Author
 **Name:** Cole Plum \
